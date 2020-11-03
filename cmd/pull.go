@@ -52,6 +52,6 @@ func init() {
 
 func pullImages() {
 	for k, v := range images {
-		utils.PullImage(v, "latest")
+		helperutils.PullImage(v, "latest")
 	}
 }
