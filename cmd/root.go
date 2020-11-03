@@ -26,19 +26,25 @@ import (
 
 var cfgFile string
 
-// rootCmd represents the base command when called without any subcommands
-var rootCmd = &cobra.Command{
-	Use:   "helpernodectl",
-	Short: "A brief description of your application",
-	Long: `A longer description that spans multiple lines and likely contains
-examples and usage of using your application. For example:
+// Define images and their registry location
+var images = map[string]string {
+	"dns": "quay.io/helpernode/dns",
+	"dhcp": "quay.io/helpernode/dhcp",
+	"http": "quay.io/helpernode/http",
+	"loadbalancer": "quay.io/helpernode/loadbalancer",
+	"pxe": "quay.io/helpernode/pxe",
+}
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
-	//	Run: func(cmd *cobra.Command, args []string) { },
+// rootCmd represents the base command when called without any subcommands
+var rootCmd = &cobra.Command {
+	Use:   "helpernodectl",
+	Short: "Utility for the HelperNode",
+	Long: `This cli utility is used to stop/start the HelperNode
+on the host it's ran from. You need to provide a helpernode.yaml file
+with information about your helper config. A simple example to start
+your HelperNode is:
+
+helpernodectl start --config=helpernode.yaml`,
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -51,17 +57,18 @@ func Execute() {
 }
 
 func init() {
+	verifyContainerRuntime()
 	cobra.OnInitialize(initConfig)
 
 	// Here you will define your flags and configuration settings.
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
 
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.helpernodectl.yaml)")
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "c", "config file (default is $HOME/.helpernode.yaml)")
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
-	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	//rootCmd.Flags().BoolP("all", "a", false, "do it for all containers")
 }
 
 // initConfig reads in config file and ENV variables if set.
@@ -79,7 +86,7 @@ func initConfig() {
 
 		// Search config in home directory with name ".helpernodectl" (without extension).
 		viper.AddConfigPath(home)
-		viper.SetConfigName(".helpernodectl")
+		viper.SetConfigName(".helpernode")
 	}
 
 	viper.AutomaticEnv() // read in environment variables that match
@@ -87,5 +94,14 @@ func initConfig() {
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err == nil {
 		fmt.Println("Using config file:", viper.ConfigFileUsed())
+	}
+}
+
+// Check runtime. Right now it's just podman
+func verifyContainerRuntime() {
+
+	out, err := exec.LookPath("podman")
+	if err != nil {
+		fmt.Println("Podman not found in your path!")
 	}
 }
