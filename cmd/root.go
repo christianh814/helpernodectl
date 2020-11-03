@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"github.com/spf13/cobra"
 	"os"
+	"os/exec"
 
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/viper"
@@ -64,7 +65,7 @@ func init() {
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
 
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "c", "config file (default is $HOME/.helpernode.yaml)")
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.helpernode.yaml)")
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
@@ -100,7 +101,7 @@ func initConfig() {
 // Check runtime. Right now it's just podman
 func verifyContainerRuntime() {
 
-	out, err := exec.LookPath("podman")
+	_, err := exec.LookPath("podman")
 	if err != nil {
 		fmt.Println("Podman not found in your path!")
 	}
