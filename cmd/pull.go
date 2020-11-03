@@ -17,7 +17,7 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/christianh814/helpernodectl/utils"
+	"github.com/christianh814/helpernodectl/helperutils"
 	"github.com/spf13/cobra"
 )
 
