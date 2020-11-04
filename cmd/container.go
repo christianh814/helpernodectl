@@ -48,10 +48,5 @@ func StopImage(containername string){
 	// First, stop container
 	exec.Command(containerRuntime, "stop", "helpernode-" + containername).Output()
 	// Then, rm the container so we can reuse the name afterwards
-	rmcmd, err := exec.Command(containerRuntime, "rm", "--force", "helpernode-" + containername).Output()
-	if err != nil {
-		fmt.Println(err)
-		fmt.Println(rmcmd)
-	}
-
+	exec.Command(containerRuntime, "rm", "--force", "helpernode-" + containername).Output()
 }
