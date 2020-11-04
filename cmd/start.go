@@ -29,17 +29,19 @@ var startCmd = &cobra.Command{
 	Use:   "start",
 	Short: "Starts HelperNode containers based on the provided manifest.",
 	Long: `This will start the containers needed for the HelperNode to run.
-It will run the services depending on what manifest is passed. Examples:
+It will run the services depending on what manifest is passed.
 
-helpernodectl start --config=helpernode.yaml
+Examples:
 
-cp helpernode.yaml ~/.helpernode.yaml
-helpernodectl start
+	helpernodectl start --config=helpernode.yaml
+	
+	cp helpernode.yaml ~/.helpernode.yaml
+	helpernodectl start
 
 This manifest should have all the information the services need to start
 up successfully.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("start called")
+		startImages()
 	},
 }
 
@@ -61,15 +63,18 @@ func init() {
 func startImages() {
 
 	if _, err := os.Stat(cfgFile); os.IsNotExist(err) {
-		fmt.Println("File " + cfgFile + " does not exist")
+		fmt.Println("Please specify a config file")
 	} else {
 		// Open file on disk
 		f, _ := os.Open(cfgFile)
-		// Read file into a byte slice
+
+		// Read file into a byte
 		reader := bufio.NewReader(f)
 		content, _ := ioutil.ReadAll(reader)
+
 		//Encode to base64
 		encoded := base64.StdEncoding.EncodeToString(content)
+
 		// run the containers using the encoding
 		for k, v := range images {
 			StartImage(v, "latest", encoded, k)
