@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"github.com/spf13/cobra"
+	"net"
 )
 
 // preflightCmd represents the preflight command
@@ -18,9 +19,11 @@ to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fixall, _ := cmd.Flags().GetBool("fix-all")
 		if fixall {
-			fmt.Println("preflight with fix all")
+			fmt.Printf("Checking for conflicts\nBEST EFFORT IN FIXING ERRORS\n============================\n")
+			portCheck()
 		} else {
-			fmt.Println("preflight called")
+			fmt.Printf("Checking for conflicts\n======================\n")
+			portCheck()
 		}
 	},
 }
@@ -40,3 +43,37 @@ func init() {
 	// preflightCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
 
+func portCheck() {
+	// check each port
+	porterrorcount := 0
+	for _, p := range ports {
+		//check if you can listen on this port on TCP
+		t, err := net.Listen("tcp", ":" + p)
+
+		// If this returns an error, then something else is listening on this port
+		if err != nil {
+			fmt.Println("WARNING: Port tcp:" + p + " is in use")
+			porterrorcount += 1
+		} else {
+			t.Close()
+		}
+
+		//now check if you can listen on this port on UDP
+		u, err := net.ListenPacket("udp", ":" + p)
+
+		// If this returns an error, then something else is listening on this port
+		if err != nil {
+			fmt.Println("WARNING: Port udp:" + p + " is in use")
+			fmt.Println(err)
+			porterrorcount += 1
+		} else {
+			u.Close()
+		}
+
+	}
+
+	// Display that no errors were found
+	if porterrorcount == 0 {
+		fmt.Println("No port confilcts were found")
+	}
+}
