@@ -64,7 +64,6 @@ func portCheck() {
 		// If this returns an error, then something else is listening on this port
 		if err != nil {
 			fmt.Println("WARNING: Port udp:" + p + " is in use")
-			fmt.Println(err)
 			porterrorcount += 1
 		} else {
 			u.Close()
