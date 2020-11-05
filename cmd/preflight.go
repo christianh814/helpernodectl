@@ -9,13 +9,18 @@ import (
 // preflightCmd represents the preflight command
 var preflightCmd = &cobra.Command{
 	Use:   "preflight",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Short: "Checks for any conflicts on the host.",
+	Long: `This checks for conflicts on the host and can optionally fix
+errors it finds. For example:
+	
+	helpernodectl preflight
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	helpernodectl preflight --fix-all
+
+
+This checks for port conflicts, systemd conflicts, and also checks any 
+firewall rules. It will optionally fix systemd and firewall rules by
+passing the --fix-all option.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fixall, _ := cmd.Flags().GetBool("fix-all")
 		if fixall {
