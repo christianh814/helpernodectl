@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"fmt"
-	"o"
+	"os"
 	"os/exec"
 )
 
