@@ -25,9 +25,11 @@ passing the --fix-all option.`,
 		fixall, _ := cmd.Flags().GetBool("fix-all")
 		if fixall {
 			fmt.Printf("Checking for conflicts\nBEST EFFORT IN FIXING ERRORS\n============================\n")
+			systemdCheck(true)
 			portCheck()
 		} else {
 			fmt.Printf("Checking for conflicts\n======================\n")
+			systemdCheck(false)
 			portCheck()
 		}
 	},
@@ -79,5 +81,24 @@ func portCheck() {
 	// Display that no errors were found
 	if porterrorcount == 0 {
 		fmt.Println("No port confilcts were found")
+	}
+}
+
+func systemdCheck(fix bool) {
+	svcerrorcount := 0
+	for _, s := range systemdsvc {
+		if IsServiceRunning(s) {
+			fmt.Println("WARNING: Service " + s + " is running")
+			svcerrorcount += 1
+			if fix {
+				fmt.Println("STOPPING/DISABLING SERVICE: " + s)
+				StopService(s)
+				DisableService(s)
+			}
+		}
+	}
+	// Display that no errors were found
+	if svcerrorcount == 0 {
+		fmt.Println("No service confilcts were found")
 	}
 }

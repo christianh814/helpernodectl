@@ -24,6 +24,12 @@ var images = map[string]string {
 // Define ports needed for preflight check
 var ports = [10]string{"67", "546", "53", "80", "443", "69", "6443", "22623", "8080", "9000"}
 
+// Define systemd services we will check
+var systemdsvc = map[string]string {
+	"resolved": "systemd-resolved.service",
+	"dnsmasq" : "dnsmasq.service",
+}
+
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command {
 	Use:   "helpernodectl",
