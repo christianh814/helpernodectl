@@ -20,7 +20,7 @@ errors it finds. For example:
 
 This checks for port conflicts, systemd conflicts, and also checks any 
 firewall rules. It will optionally fix systemd and firewall rules by
-passing the --fix-all option.`,
+passing the --fix-all option (EXPERIMENTAL).`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fixall, _ := cmd.Flags().GetBool("fix-all")
 		if fixall {
@@ -37,7 +37,7 @@ passing the --fix-all option.`,
 
 func init() {
 	rootCmd.AddCommand(preflightCmd)
-	preflightCmd.Flags().BoolP("fix-all", "x", false, "Does the needful and fixes errors it finds")
+	preflightCmd.Flags().BoolP("fix-all", "x", false, "Does the needful and fixes errors it finds - EXPERIMENTAL")
 
 	// Here you will define your flags and configuration settings.
 
