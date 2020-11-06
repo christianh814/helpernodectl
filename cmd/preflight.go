@@ -2,8 +2,8 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/spf13/cobra"
 	"net"
+	"github.com/spf13/cobra"
 )
 
 // preflightCmd represents the preflight command

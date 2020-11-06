@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"o"
 	"os/exec"
 )
 
@@ -15,8 +16,8 @@ func PullImage(image string, version string){
 	fmt.Println("Pulling: " + image)
 	cmd, err := exec.Command(containerRuntime, "pull", image + ":" + version).Output()
 	if err != nil {
-		fmt.Println(cmd)
-		fmt.Println(err)
+		fmt.Fprintf(os.Stderr, "Error running command %s: %s", cmd, err)
+		os.Exit(253)
 	}
 
 }
@@ -31,8 +32,8 @@ func StartImage(image string, version string, encodedyaml string, containername 
 	*/
 	cmd, err := exec.Command(containerRuntime, "run", "--rm", "-d", "--env=HELPERPOD_CONFIG_YAML=" + encodedyaml, "--net=host", "--name=helpernode-" + containername, image + ":" + version).Output()
 	if err != nil {
-		fmt.Println(err)
-		fmt.Println(cmd)
+		fmt.Fprintf(os.Stderr, "Error running command %s: %s", cmd, err)
+		os.Exit(253)
 	}
 
 }
