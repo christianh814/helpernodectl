@@ -23,6 +23,17 @@ func PullImage(image string, version string){
 
 }
 
+// Find takes a slice and looks for an element in it. If found it will
+// return it's key, otherwise it will return -1 and a bool of false.
+func Find(slice []string, val string) (int, bool) {
+    for i, item := range slice {
+        if item == val {
+            return i, true
+        }
+    }
+    return -1, false
+}
+
 //going to covert this to use the podman module in the future
 func StartImage(image string, version string, encodedyaml string, containername string){
 
@@ -108,5 +119,85 @@ func DisableService(servicename string){
 			fmt.Fprintf(os.Stderr, "Error running command %s: %s\n", cmd, err)
 			os.Exit(53)
 		}
+	}
+}
+
+// get current firewalld rules and return as a slice of string
+func GetCurrentFirewallRules() []string {
+
+	// get list of ports currently configured
+	cmd, err := exec.Command("firewall-cmd", "--list-ports").Output()
+
+	// check for error of command
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error running command %s: %s\n", cmd, err)
+		os.Exit(253)
+	}
+
+	// create a slice of string based on the output, trimming the newline first and splitting on " " (space)
+	s := strings.Split(strings.TrimSuffix(string(cmd), "\n"), " ")
+
+	// get the list of services currenly configured
+	scmd, err := exec.Command("firewall-cmd", "--list-services").Output()
+
+	// check for error
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error running command %s: %s\n", scmd, err)
+		os.Exit(253)
+	}
+
+	// create a slice of string based on the output, trimming the newline first and splitting on " " (space)
+	svc := strings.Split(strings.TrimSuffix(string(scmd), "\n"), " ")
+
+	// create a new array based on this new svc array. We will be converting service names to port output
+	// simiar to what we got with: firewall-cmd --list--ports
+	var ns = []string{}
+
+	// range over the service, find out it's port and append it to the array we just created
+	for _, v:= range svc {
+		lc, err := exec.Command("firewall-cmd", "--service", v, "--get-ports", "--permanent").Output()
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error running command %s: %s\n", lc, err)
+			os.Exit(253)
+		}
+		nv := strings.TrimSuffix(string(lc), "\n")
+		if strings.Contains(nv, " ") {
+			ls := strings.Split(nv, " ")
+			for _, l := range ls {
+				ns = append(ns, l)
+			}
+		} else {
+			ns = append(ns, nv)
+		}
+	}
+
+	// append this new array of string into the original 
+	for _, v := range ns {
+		s = append(s, v)
+	}
+
+	// Let's return this slice of string
+	return s
+}
+
+func OpenPort(port string) {
+
+	// Open Ports using the port number
+	cmd, err := exec.Command("firewall-cmd", "--add-port", port ,"--permanent", "-q").Output()
+
+
+	// check for error of command
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error running add-port command %s: %s\n", cmd, err)
+		os.Exit(253)
+	}
+
+	// Reload the firewall to get the most up to date table
+	rcmd, err := exec.Command("firewall-cmd", "--reload").Output()
+
+	// check for error of command
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error running reload command %s: %s\n", rcmd, err)
+		os.Exit(253)
 	}
 }

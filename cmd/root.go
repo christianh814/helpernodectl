@@ -5,7 +5,6 @@ import (
 	"github.com/spf13/cobra"
 	"os"
 	"os/exec"
-
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/viper"
 )
@@ -21,8 +20,25 @@ var images = map[string]string {
 	"pxe": "quay.io/helpernode/pxe",
 }
 
-// Define ports needed for preflight check
+// Define ports needed for preflight check of listening ports
 var ports = [10]string{"67", "546", "53", "80", "443", "69", "6443", "22623", "8080", "9000"}
+
+// Define firewalld rules needed to be in place
+var fwrule = [13]string {
+	"6443/tcp",
+	"22623/tcp",
+	"8080/tcp",
+	"9000/tcp",
+	"9090/tcp",
+	"67/udp",
+	"546/udp",
+	"53/tcp",
+	"53/udp",
+	"80/tcp",
+	"443/tcp",
+	"22/tcp",
+	"69/udp",
+}
 
 // Define systemd services we will check
 var systemdsvc = map[string]string {
@@ -53,6 +69,7 @@ func Execute() {
 
 func init() {
 	verifyContainerRuntime()
+	verifyFirewallCommand()
 	cobra.OnInitialize(initConfig)
 
 	// Here you will define your flags and configuration settings.
@@ -97,6 +114,17 @@ func verifyContainerRuntime() {
 
 	_, err := exec.LookPath("podman")
 	if err != nil {
-		fmt.Println("Podman not found in your path!")
+		fmt.Fprintf(os.Stderr, "Error looking for Podman: %s\n", err)
+		os.Exit(1)
+	}
+}
+
+// Check runtime. Right now it's just podman
+func verifyFirewallCommand() {
+
+	_, err := exec.LookPath("firewall-cmd")
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error looking for firewall-cmd: %s\n", err)
+		os.Exit(1)
 	}
 }

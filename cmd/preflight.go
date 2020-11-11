@@ -27,10 +27,12 @@ passing the --fix-all option (EXPERIMENTAL).`,
 			fmt.Printf("Checking for conflicts\nBEST EFFORT IN FIXING ERRORS\n============================\n")
 			systemdCheck(true)
 			portCheck()
+			firewallRulesCheck(true)
 		} else {
 			fmt.Printf("Checking for conflicts\n======================\n")
 			systemdCheck(false)
 			portCheck()
+			firewallRulesCheck(false)
 		}
 	},
 }
@@ -51,8 +53,9 @@ func init() {
 }
 
 func portCheck() {
-	// check each port
+	// set the error count to 0
 	porterrorcount := 0
+	// check each port
 	for _, p := range ports {
 		//check if you can listen on this port on TCP
 		t, err := net.Listen("tcp", ":" + p)
@@ -85,6 +88,7 @@ func portCheck() {
 }
 
 func systemdCheck(fix bool) {
+	// set the error count to 0
 	svcerrorcount := 0
 	for _, s := range systemdsvc {
 		if IsServiceRunning(s) {
@@ -100,5 +104,33 @@ func systemdCheck(fix bool) {
 	// Display that no errors were found
 	if svcerrorcount == 0 {
 		fmt.Println("No service confilcts were found")
+	}
+}
+
+func firewallRulesCheck(fix bool) {
+	// set the error count to 0
+	fwerrorcount := 0
+
+	// get the current firewall rules on the host and set it to "s"
+	s := GetCurrentFirewallRules()
+
+	// loop through each firewall rule:
+	// If there's a match, that means the rule is there and nothing needs to be done.
+	// If it's NOT there, it needs to be enabled (if requested)
+	for _, f := range fwrule {
+		_, found := Find(s, f)
+		if !found {
+			fmt.Println("Firewall rule " + f + " not found!")
+			fwerrorcount += 1
+			if fix {
+				fmt.Println("OPENING PORT: " + f)
+				OpenPort(f)
+			}
+		}
+	}
+
+	// Display that no errors were found
+	if fwerrorcount == 0 {
+		fmt.Println("No firewall issues were found")
 	}
 }
