@@ -111,6 +111,16 @@ func firewallRulesCheck(fix bool) {
 	// set the error count to 0
 	fwerrorcount := 0
 
+	// Check if firewalld service is running
+	if !IsServiceRunning("firewalld.service") {
+		fwerrorcount += 1
+		fmt.Println("WARNING: Service firewalld.service is NOT running")
+		if fix {
+			StartService("firewalld.service")
+			EnableService("firewalld.service")
+		}
+	}
+
 	// get the current firewall rules on the host and set it to "s"
 	s := GetCurrentFirewallRules()
 

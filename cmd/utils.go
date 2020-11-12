@@ -107,6 +107,22 @@ func StopService(servicename string){
 }
 
 // stopping service 
+func StartService(servicename string){
+
+	// start the service only if it isn't running
+	if !IsServiceRunning(servicename) {
+		fmt.Println("Starting service: " + servicename)
+		//Start the service with systemd
+		cmd, err := exec.Command("systemctl", "start", servicename).Output()
+		// Check to see if the start was successful
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error running command %s: %s\n", cmd, err)
+			os.Exit(53)
+		}
+	}
+}
+
+// disable service 
 func DisableService(servicename string){
 
 	// Disable only if it needs to be
@@ -115,6 +131,22 @@ func DisableService(servicename string){
 		//Stop the service with systemd
 		cmd, err := exec.Command("systemctl", "disable", servicename).Output()
 		// Check to see if the stop was successful
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error running command %s: %s\n", cmd, err)
+			os.Exit(53)
+		}
+	}
+}
+
+// enable service 
+func EnableService(servicename string){
+
+	// Enable only if it needs to be
+	if !IsServiceEnabled(servicename) {
+		fmt.Println("Enabling service: " + servicename)
+		//enable the service with systemd
+		cmd, err := exec.Command("systemctl", "enable", servicename).Output()
+		// Check to see if the enable was successful
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error running command %s: %s\n", cmd, err)
 			os.Exit(53)
