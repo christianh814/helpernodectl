@@ -63,7 +63,11 @@ func startImages() {
 
 		// run the containers using the encoding
 		for k, v := range images {
-			StartImage(v, "latest", encoded, k)
+			if IsImageRunning("helpernode-" + k) {
+				fmt.Println("SKIPPING: Container helpernode-" + k + " already running.")
+			} else {
+				StartImage(v, "latest", encoded, k)
+			}
 		}
 	}
 }

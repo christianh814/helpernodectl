@@ -36,6 +36,10 @@ func init() {
 
 func stopImages() {
 	for k, _ := range images {
-		StopImage(k)
+		if !IsImageRunning("helpernode-" + k) {
+			fmt.Println("SKIPPING: Container helpernode-" + k + " already stopped.")
+		} else {
+			StopImage(k)
+		}
 	}
 }

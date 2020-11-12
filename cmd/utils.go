@@ -38,10 +38,6 @@ func Find(slice []string, val string) (int, bool) {
 func StartImage(image string, version string, encodedyaml string, containername string){
 
 	fmt.Println("Running: " + image)
-	/* TODO:
-		- Need to write the output for the image run
-		- Check if the image is already running
-	*/
 	cmd, err := exec.Command(containerRuntime, "run", "--rm", "-d", "--env=HELPERPOD_CONFIG_YAML=" + encodedyaml, "--net=host", "--name=helpernode-" + containername, image + ":" + version).Output()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error running command %s: %s\n", cmd, err)
@@ -62,6 +58,24 @@ func StopImage(containername string){
 	exec.Command(containerRuntime, "stop", "helpernode-" + containername).Output()
 	// Then, rm the container so we can reuse the name afterwards
 	exec.Command(containerRuntime, "rm", "--force", "helpernode-" + containername).Output()
+}
+
+//check if an image is running. Return true if it is
+func IsImageRunning(containername string) bool {
+
+	// output of all of all running containers
+	cmd, err := exec.Command("podman", "ps", "--format", "{{.Names}}").Output()
+
+	// check for error
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error running command %s: %s\n", cmd, err)
+		os.Exit(253)
+	}
+
+	// create a slice of string based on the output, trimming the newline first and splitting on "\n" (space)
+	s := strings.Split(strings.TrimSuffix(string(cmd), "\n"), "\n")
+	_, found := Find(s, containername)
+	return found
 }
 
 // checking if service is running
