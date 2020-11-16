@@ -9,7 +9,15 @@ import (
 	"github.com/spf13/viper"
 )
 
+// set the global config file as a string
 var cfgFile string
+
+//cli clients as a map
+var clients = map[string]string {
+	"oc": "openshift-client-linux.tar.gz",
+	"openshift-install": "openshift-install-linux.tar.gz",
+	"helm": "helm.tar.gz",
+}
 
 // Define images and their registry location
 var images = map[string]string {
