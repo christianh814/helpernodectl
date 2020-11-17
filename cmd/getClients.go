@@ -51,7 +51,7 @@ func getTheClients(image string) {
 		StartImage("quay.io/helpernode/http", "latest", "bm90OiAidXNlZCIK", "http")
 		for _, v := range clients {
 			fmt.Println("Getting file " + v)
-			// get the artifact
+			// get the artifact - should probably make a put/get function later
 			cmd, err := exec.Command("podman", "cp", "helpernode-" + image + ":" + clientpath + v ,".").Output()
 			if err != nil {
 				fmt.Fprintf(os.Stderr, "Error running podman-cp command %s: %s\n", cmd, err)
