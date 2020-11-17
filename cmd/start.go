@@ -26,6 +26,11 @@ Examples:
 This manifest should have all the information the services need to start
 up successfully.`,
 	Run: func(cmd *cobra.Command, args []string) {
+		/* this calls preflight, but I need to make preflight smarter
+		   right now, errors do not exit the cli. So, it'll try to start
+		   even if it find conflicts
+		preflightCmd.Run(cmd, []string{})
+		*/
 		startImages()
 	},
 }
@@ -51,6 +56,7 @@ func startImages() {
 		fmt.Println("Please specify a config file")
 		os.Exit(153)
 	} else {
+
 		// Open file on disk
 		f, _ := os.Open(cfgFile)
 
