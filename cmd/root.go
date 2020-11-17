@@ -104,7 +104,7 @@ func initConfig() {
 			os.Exit(1)
 		}
 
-		// Search config in home directory with name ".helpernodectl" (without extension).
+		// Search config in home directory with name ".helpernode" (without extension).
 		viper.AddConfigPath(home)
 		viper.SetConfigName(".helpernode")
 	}

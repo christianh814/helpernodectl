@@ -26,21 +26,39 @@ Examples:
 This manifest should have all the information the services need to start
 up successfully.`,
 	Run: func(cmd *cobra.Command, args []string) {
+		// get any options passed
 		skippreflight, _ := cmd.Flags().GetBool("skip-preflight")
-		if skippreflight {
-			fmt.Printf("Skipping Preflightchecks\n======================\n")
-			startImages()
+		svc, _ := cmd.Flags().GetString("service")
+		///
+		if len(svc) > 0 {
+                        // check if the string passed matches a service
+                        if _, exists := images[svc]; exists {
+                                //if it matches; create a "single service" map and pass that to the stop function
+                                singleservicemap := map[string]string{svc:images[svc]}
+                                startImages(singleservicemap)
+                        } else {
+                                // If I didn't find it...tell them
+                                fmt.Println("Invalid service: " + svc)
+                                os.Exit(12)
+                        }
 		} else {
-			preflightCmd.Run(cmd, []string{})
-			fmt.Printf("Starting Containers\n======================\n")
-			startImages()
+			if skippreflight {
+				fmt.Printf("Skipping Preflightchecks\n======================\n")
+				startImages(images)
+			} else {
+				preflightCmd.Run(cmd, []string{})
+				fmt.Printf("Starting Containers\n======================\n")
+				startImages(images)
+			}
 		}
+		///
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(startCmd)
 	startCmd.Flags().BoolP("skip-preflight", "", false, "Skips preflight checks and tries to start the containers")
+	startCmd.Flags().String("service", "", "start a service/container (preflight NOT performed). Valid names: dns, dhcp, http, loadbalancer, pxe")
 
 	// Here you will define your flags and configuration settings.
 
@@ -53,8 +71,8 @@ func init() {
 	// startCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
 
-// For now, start all images
-func startImages() {
+// Take the map given and start images based on that map: Default (above) `images` gets passed in
+func startImages(imgs map[string]string) {
 
 	if _, err := os.Stat(cfgFile); os.IsNotExist(err) {
 		fmt.Println("Please specify a config file")
@@ -72,7 +90,7 @@ func startImages() {
 		encoded := base64.StdEncoding.EncodeToString(content)
 
 		// run the containers using the encoding
-		for k, v := range images {
+		for k, v := range imgs {
 			if IsImageRunning("helpernode-" + k) {
 				fmt.Println("SKIPPING: Container helpernode-" + k + " already running.")
 			} else {
