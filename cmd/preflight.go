@@ -2,9 +2,13 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 	"net"
 	"github.com/spf13/cobra"
 )
+
+// preflight error counter
+var PreflightErrorCount int = 0
 
 // preflightCmd represents the preflight command
 var preflightCmd = &cobra.Command{
@@ -28,11 +32,17 @@ passing the --fix-all option (EXPERIMENTAL).`,
 			systemdCheck(true)
 			portCheck()
 			firewallRulesCheck(true)
+			if PreflightErrorCount != 0 {
+				os.Exit(10)
+			}
 		} else {
 			fmt.Printf("Checking for conflicts\n======================\n")
 			systemdCheck(false)
 			portCheck()
 			firewallRulesCheck(false)
+			if PreflightErrorCount != 0 {
+				os.Exit(10)
+			}
 		}
 	},
 }
@@ -84,6 +94,8 @@ func portCheck() {
 	// Display that no errors were found
 	if porterrorcount == 0 {
 		fmt.Println("No port confilcts were found")
+	} else {
+		PreflightErrorCount += 1
 	}
 }
 
@@ -104,6 +116,8 @@ func systemdCheck(fix bool) {
 	// Display that no errors were found
 	if svcerrorcount == 0 {
 		fmt.Println("No service confilcts were found")
+	} else {
+		PreflightErrorCount += 1
 	}
 }
 
@@ -142,5 +156,7 @@ func firewallRulesCheck(fix bool) {
 	// Display that no errors were found
 	if fwerrorcount == 0 {
 		fmt.Println("No firewall issues were found")
+	} else {
+		PreflightErrorCount += 1
 	}
 }

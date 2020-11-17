@@ -26,17 +26,21 @@ Examples:
 This manifest should have all the information the services need to start
 up successfully.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		/* this calls preflight, but I need to make preflight smarter
-		   right now, errors do not exit the cli. So, it'll try to start
-		   even if it find conflicts
-		preflightCmd.Run(cmd, []string{})
-		*/
-		startImages()
+		skippreflight, _ := cmd.Flags().GetBool("skip-preflight")
+		if skippreflight {
+			fmt.Printf("Skipping Preflightchecks\n======================\n")
+			startImages()
+		} else {
+			preflightCmd.Run(cmd, []string{})
+			fmt.Printf("Starting Containers\n======================\n")
+			startImages()
+		}
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(startCmd)
+	startCmd.Flags().BoolP("skip-preflight", "", false, "Skips preflight checks and tries to start the containers")
 
 	// Here you will define your flags and configuration settings.
 
