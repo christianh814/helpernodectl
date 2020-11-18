@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 	"io/ioutil"
 	"os"
 )
@@ -74,13 +75,13 @@ func init() {
 // Take the map given and start images based on that map: Default (above) `images` gets passed in
 func startImages(imgs map[string]string) {
 
-	if _, err := os.Stat(cfgFile); os.IsNotExist(err) {
+	if _, err := os.Stat(viper.ConfigFileUsed()); os.IsNotExist(err) {
 		fmt.Println("Please specify a config file")
 		os.Exit(153)
 	} else {
 
 		// Open file on disk
-		f, _ := os.Open(cfgFile)
+		f, _ := os.Open(viper.ConfigFileUsed())
 
 		// Read file into a byte
 		reader := bufio.NewReader(f)
