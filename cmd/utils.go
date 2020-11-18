@@ -50,10 +50,6 @@ func StartImage(image string, version string, encodedyaml string, containername 
 func StopImage(containername string){
 
 	fmt.Println("Stopping: helpernode-" + containername)
-	/* TODO:
-		- Need to write the output for the image run
-		- Check if service is already stopped
-	*/
 	// First, stop container
 	exec.Command(containerRuntime, "stop", "helpernode-" + containername).Output()
 	// Then, rm the container so we can reuse the name afterwards
