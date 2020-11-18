@@ -38,8 +38,8 @@ func init() {
 }
 
 func getStatus() {
-	// just calls "ps" to podman for now
-	cmd, err := exec.Command("podman", "ps").Output()
+	// Call `podman ps` filtering by containers that start with "helpernode" and only print out what is needed
+	cmd, err := exec.Command("podman", "ps", "-a", "--filter", "name=^helpernode", "--format", fmt.Sprintf(`table {{.Names}} {{.Status}} {{.Image}}`)).Output()
 
 	// check if there's an error
 	if err != nil {
