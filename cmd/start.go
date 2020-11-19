@@ -95,7 +95,9 @@ func startImages(imgs map[string]string) {
 			if IsImageRunning("helpernode-" + k) {
 				fmt.Println("SKIPPING: Container helpernode-" + k + " already running.")
 			} else {
-				StartImage(v, "latest", encoded, k)
+				if !DoISkip(k) {
+					StartImage(v, "latest", encoded, k)
+				}
 			}
 		}
 	}

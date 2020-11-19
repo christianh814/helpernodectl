@@ -2,20 +2,26 @@ package cmd
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 	"os/exec"
 	"strings"
+	"github.com/spf13/viper"
+	"gopkg.in/yaml.v2"
 )
 
 var ImageName string
 var ImageVersion string
 var containerRuntime string = "podman"
+type Config struct {
+	Services []string `yaml:"disableservice"`
+}
 
 //going to covert this to use the podman module in the future
-func PullImage(image string, version string){
+func PullImage(image string, version string) {
 
 	fmt.Println("Pulling: " + image)
-	cmd, err := exec.Command(containerRuntime, "pull", image + ":" + version).Output()
+	cmd, err := exec.Command(containerRuntime, "pull", image+":"+version).Output()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error running command %s: %s\n", cmd, err)
 		os.Exit(253)
@@ -26,19 +32,19 @@ func PullImage(image string, version string){
 // Find takes a slice and looks for an element in it. If found it will
 // return it's key, otherwise it will return -1 and a bool of false.
 func Find(slice []string, val string) (int, bool) {
-    for i, item := range slice {
-        if item == val {
-            return i, true
-        }
-    }
-    return -1, false
+	for i, item := range slice {
+		if item == val {
+			return i, true
+		}
+	}
+	return -1, false
 }
 
 //going to covert this to use the podman module in the future
-func StartImage(image string, version string, encodedyaml string, containername string){
+func StartImage(image string, version string, encodedyaml string, containername string) {
 
 	fmt.Println("Running: " + image)
-	cmd, err := exec.Command(containerRuntime, "run", "--rm", "-d", "--env=HELPERPOD_CONFIG_YAML=" + encodedyaml, "--net=host", "--name=helpernode-" + containername, image + ":" + version).Output()
+	cmd, err := exec.Command(containerRuntime, "run", "--rm", "-d", "--env=HELPERPOD_CONFIG_YAML="+encodedyaml, "--net=host", "--name=helpernode-"+containername, image+":"+version).Output()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error running command %s: %s\n", cmd, err)
 		os.Exit(253)
@@ -47,13 +53,13 @@ func StartImage(image string, version string, encodedyaml string, containername 
 }
 
 //going to covert this to use the podman module in the future
-func StopImage(containername string){
+func StopImage(containername string) {
 
 	fmt.Println("Stopping: helpernode-" + containername)
 	// First, stop container
-	exec.Command(containerRuntime, "stop", "helpernode-" + containername).Output()
+	exec.Command(containerRuntime, "stop", "helpernode-"+containername).Output()
 	// Then, rm the container so we can reuse the name afterwards
-	exec.Command(containerRuntime, "rm", "--force", "helpernode-" + containername).Output()
+	exec.Command(containerRuntime, "rm", "--force", "helpernode-"+containername).Output()
 }
 
 //check if an image is running. Return true if it is
@@ -100,8 +106,8 @@ func IsServiceEnabled(servicename string) bool {
 	return es == "enabled"
 }
 
-// stopping service 
-func StopService(servicename string){
+// stopping service
+func StopService(servicename string) {
 
 	// stop the service only if it's running
 	if IsServiceRunning(servicename) {
@@ -116,8 +122,8 @@ func StopService(servicename string){
 	}
 }
 
-// stopping service 
-func StartService(servicename string){
+// stopping service
+func StartService(servicename string) {
 
 	// start the service only if it isn't running
 	if !IsServiceRunning(servicename) {
@@ -132,8 +138,8 @@ func StartService(servicename string){
 	}
 }
 
-// disable service 
-func DisableService(servicename string){
+// disable service
+func DisableService(servicename string) {
 
 	// Disable only if it needs to be
 	if IsServiceEnabled(servicename) {
@@ -148,8 +154,8 @@ func DisableService(servicename string){
 	}
 }
 
-// enable service 
-func EnableService(servicename string){
+// enable service
+func EnableService(servicename string) {
 
 	// Enable only if it needs to be
 	if !IsServiceEnabled(servicename) {
@@ -196,7 +202,7 @@ func GetCurrentFirewallRules() []string {
 	var ns = []string{}
 
 	// range over the service, find out it's port and append it to the array we just created
-	for _, v:= range svc {
+	for _, v := range svc {
 		lc, err := exec.Command("firewall-cmd", "--service", v, "--get-ports", "--permanent").Output()
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error running command %s: %s\n", lc, err)
@@ -213,7 +219,7 @@ func GetCurrentFirewallRules() []string {
 		}
 	}
 
-	// append this new array of string into the original 
+	// append this new array of string into the original
 	for _, v := range ns {
 		s = append(s, v)
 	}
@@ -225,8 +231,7 @@ func GetCurrentFirewallRules() []string {
 func OpenPort(port string) {
 
 	// Open Ports using the port number
-	cmd, err := exec.Command("firewall-cmd", "--add-port", port ,"--permanent", "-q").Output()
-
+	cmd, err := exec.Command("firewall-cmd", "--add-port", port, "--permanent", "-q").Output()
 
 	// check for error of command
 	if err != nil {
@@ -243,3 +248,35 @@ func OpenPort(port string) {
 		os.Exit(253)
 	}
 }
+
+func DoISkip(service string) bool {
+	/* This fuction takes in the config
+	   and checks to see if the service
+	   passed in is in the YAML file.
+	*/
+
+	var config Config
+
+	//read in the config file
+	source, err := ioutil.ReadFile(viper.ConfigFileUsed())
+
+	// check for errors
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error reading config file: %s\n", err)
+		os.Exit(253)
+	}
+
+	// get the contents of the YAML file
+	err = yaml.Unmarshal(source, &config)
+
+	// check for error
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error unmarshalling  yaml: %s\n", err)
+		os.Exit(253)
+	}
+
+	// return if the service passed in is in the YAML
+	_, found := Find(config.Services, service)
+	return found
+}
+//
