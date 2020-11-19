@@ -12,6 +12,9 @@ import (
 // set the global config file as a string
 var cfgFile string
 
+// Env var to the image prefix
+var HELPERNODE_IMAGE_PREFIX string
+
 //cli clients as a map
 var clients = map[string]string {
 	"oc": "openshift-client-linux.tar.gz",
@@ -89,6 +92,18 @@ func init() {
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
 	//rootCmd.Flags().BoolP("all", "a", false, "do it for all containers")
+
+	if len(os.Getenv("HELPERNODE_IMAGE_PREFIX")) > 0 {
+		// Define images and their registry location based on the env var
+		imageprefix := os.Getenv("HELPERNODE_IMAGE_PREFIX")
+		images = map[string]string {
+			"dns": imageprefix + "/helpernode/dns",
+			"dhcp": imageprefix + "/helpernode/dhcp",
+			"http": imageprefix + "/helpernode/http",
+			"loadbalancer": imageprefix + "/helpernode/loadbalancer",
+			"pxe": imageprefix + "/helpernode/pxe",
+		}
+	}
 }
 
 // initConfig reads in config file and ENV variables if set.
