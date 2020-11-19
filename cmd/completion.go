@@ -16,6 +16,10 @@ Example:
 	source <(helpernodectl completion bash)
 `,
 	Run: func(cmd *cobra.Command, args []string) {
+		if len(args) == 0 {
+			cmd.Help()
+			os.Exit(0)
+		}
 		switch args[0] {
 		case "bash":
 			cmd.Root().GenBashCompletion(os.Stdout)
@@ -25,6 +29,8 @@ Example:
 			cmd.Root().GenFishCompletion(os.Stdout, true)
 		case "powershell":
 			cmd.Root().GenPowerShellCompletion(os.Stdout)
+		default:
+			cmd.Help()
 		}
 	},
 }
