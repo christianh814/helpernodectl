@@ -2,26 +2,34 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/spf13/viper"
+	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"os"
 	"os/exec"
 	"strings"
-	"github.com/spf13/viper"
-	"gopkg.in/yaml.v2"
 )
 
 var ImageName string
 var ImageVersion string
 var containerRuntime string = "podman"
+
+type PlugableService struct {
+	Name  string   `yaml:"name"`
+	Image string   `yaml:"image"`
+	Ports []string `yaml:"ports"`
+}
+
 type Config struct {
 	Services []string `yaml:"disableservice"`
+	PlugableService []PlugableService `yaml:"plugableService"`
 }
 
 //going to covert this to use the podman module in the future
-func PullImage(image string, version string) {
+func PullImage(image string) {
 
 	fmt.Println("Pulling: " + image)
-	cmd, err := exec.Command(containerRuntime, "pull", image+":"+version).Output()
+	cmd, err := exec.Command(containerRuntime, "pull", image).Output()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error running command %s: %s\n", cmd, err)
 		os.Exit(253)
@@ -41,10 +49,10 @@ func Find(slice []string, val string) (int, bool) {
 }
 
 //going to covert this to use the podman module in the future
-func StartImage(image string, version string, encodedyaml string, containername string) {
+func StartImage(image string, encodedyaml string, containername string) {
 
 	fmt.Println("Running: " + image)
-	cmd, err := exec.Command(containerRuntime, "run", "--rm", "-d", "--env=HELPERPOD_CONFIG_YAML="+encodedyaml, "--net=host", "--name=helpernode-"+containername, image+":"+version).Output()
+	cmd, err := exec.Command(containerRuntime, "run", "--rm", "-d", "--env=HELPERPOD_CONFIG_YAML="+encodedyaml, "--net=host", "--name=helpernode-"+containername, image).Output()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error running command %s: %s\n", cmd, err)
 		os.Exit(253)
@@ -279,4 +287,5 @@ func DoISkip(service string) bool {
 	_, found := Find(config.Services, service)
 	return found
 }
+
 //

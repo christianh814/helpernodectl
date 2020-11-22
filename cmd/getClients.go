@@ -48,7 +48,7 @@ func getTheClients(image string) {
 			TODO: Start the container with `sleep infinity`. Maybe build it into the startup.sh file?
 		*/
 		fmt.Println("Image helpernode-" + image + " is NOT running...starting temporarily")
-		StartImage(images[image], "latest", "bm90OiAidXNlZCIK", "http")
+		StartImage(images[image], "bm90OiAidXNlZCIK", "http")
 		for _, v := range clients {
 			fmt.Println("Getting file " + v)
 			// get the artifact - should probably make a put/get function later

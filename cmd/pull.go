@@ -8,7 +8,7 @@ import (
 var pullCmd = &cobra.Command{
 	Use:   "pull",
 	Short: "Pulls images into your node",
-	Long: `This will pull the images onto your local host. These images are used to
+	Long: `This will pull the  core helpernode images onto your local host. These images are used to
 start all the services needed for the HelperNode. These images are:
 
 quay.io/helpernode/pxe
@@ -38,6 +38,6 @@ func init() {
 // Loop through images and pull them
 func pullImages() {
 	for _, v := range images {
-		PullImage(v, "latest")
+		PullImage(v)
 	}
 }

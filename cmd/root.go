@@ -9,6 +9,9 @@ import (
 	"github.com/spf13/viper"
 )
 
+// set imageversion var
+var imageversion string = "latest"
+
 // set the global config file as a string
 var cfgFile string
 
@@ -24,18 +27,18 @@ var clients = map[string]string {
 
 // Define images and their registry location
 var images = map[string]string {
-	"dns": "quay.io/helpernode/dns",
-	"dhcp": "quay.io/helpernode/dhcp",
-	"http": "quay.io/helpernode/http",
-	"loadbalancer": "quay.io/helpernode/loadbalancer",
-	"pxe": "quay.io/helpernode/pxe",
+	"dns": "quay.io/helpernode/dns" + ":" + imageversion,
+	"dhcp": "quay.io/helpernode/dhcp" + ":" + imageversion,
+	"http": "quay.io/helpernode/http" + ":" + imageversion,
+	"loadbalancer": "quay.io/helpernode/loadbalancer" + ":" + imageversion,
+	"pxe": "quay.io/helpernode/pxe" + ":" + imageversion,
 }
 
 // Define ports needed for preflight check of listening ports
-var ports = [10]string{"67", "546", "53", "80", "443", "69", "6443", "22623", "8080", "9000"}
+var ports = []string{"67", "546", "53", "80", "443", "69", "6443", "22623", "8080", "9000"}
 
 // Define firewalld rules needed to be in place
-var fwrule = [13]string {
+var fwrule = []string {
 	"6443/tcp",
 	"22623/tcp",
 	"8080/tcp",
@@ -93,17 +96,20 @@ func init() {
 	// when this action is called directly.
 	//rootCmd.Flags().BoolP("all", "a", false, "do it for all containers")
 
+	// change the prefix to the env var, if defined
 	if len(os.Getenv("HELPERNODE_IMAGE_PREFIX")) > 0 {
 		// Define images and their registry location based on the env var
 		imageprefix := os.Getenv("HELPERNODE_IMAGE_PREFIX")
 		images = map[string]string {
-			"dns": imageprefix + "/helpernode/dns",
-			"dhcp": imageprefix + "/helpernode/dhcp",
-			"http": imageprefix + "/helpernode/http",
-			"loadbalancer": imageprefix + "/helpernode/loadbalancer",
-			"pxe": imageprefix + "/helpernode/pxe",
+			"dns": imageprefix + "/helpernode/dns" + ":" + imageversion,
+			"dhcp": imageprefix + "/helpernode/dhcp" + ":" + imageversion,
+			"http": imageprefix + "/helpernode/http" + ":" + imageversion,
+			"loadbalancer": imageprefix + "/helpernode/loadbalancer" + ":" + imageversion,
+			"pxe": imageprefix + "/helpernode/pxe" + ":" + imageversion,
 		}
 	}
+
+	// PlugableSerices go here
 }
 
 // initConfig reads in config file and ENV variables if set.
